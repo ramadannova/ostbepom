@@ -53,11 +53,53 @@
         </section>
 
         <section class="visual-card">
-          <div class="tank-visual-wrap">
-            <img src="tank.png" alt="Oil Sounding Tank" class="tank-visual">
-          </div>
-          <div class="info-box">
-            <div class="info-icon">i</div>
+
+  <!-- MONITOR HASIL PERHITUNGAN -->
+  <div class="tank-monitor" id="tankMonitor">
+
+    <div class="monitor-row">
+      <span class="monitor-label">Tank Ullage</span>
+      <strong>
+        <span id="monitorUllage">-</span> cm
+      </strong>
+    </div>
+
+    <div class="monitor-row">
+      <span class="monitor-label">CPO Temperature</span>
+      <strong>
+        <span id="monitorTemp">-</span> °C
+      </strong>
+    </div>
+
+    <div class="monitor-row">
+      <span class="monitor-label">Density</span>
+      <strong>
+        <span id="monitorDensity">-</span> kg/L
+      </strong>
+    </div>
+
+    <div class="monitor-row">
+      <span class="monitor-label">CPO Mass</span>
+      <strong>
+        <span id="monitorMass">-</span> Ton
+      </strong>
+    </div>
+
+    <div class="monitor-row">
+      <span class="monitor-label">Total Volume</span>
+      <strong>
+        <span id="monitorVolume">-</span> Ltr
+      </strong>
+    </div>
+
+  </div>
+
+  <!-- GAMBAR TANGKI -->
+  <div class="tank-visual-wrap">
+    <img src="tank.png" alt="Oil Sounding Tank" class="tank-visual">
+  </div>
+
+  <div class="info-box">
             <div>
               <strong>Informasi</strong>
               <p>Masukkan data sounding dan temperatur untuk mendapatkan hasil perhitungan volume, densitas, dan parameter lainnya.</p>
