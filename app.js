@@ -197,11 +197,11 @@ async function loadExcel(tankNo) {
     if (!rows.length) throw new Error("Kolom Ullage/Volume tidak terbaca dari Excel");
     renderTable();
     $("excelStatus").textContent = `✓ ST ${tankNo}.xlsx berhasil dibaca: ${rows.length} data kalibrasi`;
-    calculate();
+    resetTankMonitor();
   } catch (e) {
     rows = [];
     $("excelStatus").textContent = `✕ ${e.message}. Letakkan file tersebut di folder data.`;
-    calculate();
+    resetTankMonitor();
   }
 }
 
@@ -246,7 +246,7 @@ async function loadDensity() {
 
     renderDensityTable();
     $("densityStatus").textContent = `✓ density.xlsx terbaca (${densityRows.length} data)`;
-    calculate();
+    resetTankMonitor();
   } catch (e) {
     // Fallback supaya aplikasi tetap dapat menghitung walaupun GitHub Pages gagal
     // membaca file Excel karena cache/path. Nilainya berasal dari density.xlsx resmi.
@@ -254,7 +254,7 @@ async function loadDensity() {
     renderDensityTable();
     $("densityStatus").textContent = "✓ Tabel density siap digunakan (data standar)";
     console.warn("Excel density tidak terbaca, memakai tabel density bawaan:", e);
-    calculate();
+    resetTankMonitor();
   }
 }
 
@@ -372,53 +372,101 @@ function calculate() {
   const u = Number($("ullage").value);
   const temps = [$("t1").value, $("t2").value, $("t3").value].map(Number);
   const validTemps = temps.filter(t => Number.isFinite(t) && t > 0);
+
   let avg = NaN;
   let densityData = null;
 
+  // TEMPERATURE & DENSITY
   if (validTemps.length) {
-    avg = validTemps.reduce((a,b) => a + b, 0) / validTemps.length;
+    avg = validTemps.reduce((a, b) => a + b, 0) / validTemps.length;
     $("avgTemp").textContent = fmt(avg, 2);
+
     densityData = findDensity(avg);
+
     if (densityData) {
       $("tableTemp").textContent = fmt(densityData.temperature, 1);
       $("density").textContent = fmt(densityData.density, 4);
-      $("factor").textContent = Number.isFinite(densityData.factor) ? fmt(densityData.factor, 7) : "-";
+      $("factor").textContent = Number.isFinite(densityData.factor)
+        ? fmt(densityData.factor, 7)
+        : "-";
     } else {
-      $("tableTemp").textContent = $("density").textContent = $("factor").textContent = "-";
+      $("tableTemp").textContent = "-";
+      $("density").textContent = "-";
+      $("factor").textContent = "-";
     }
   } else {
     $("avgTemp").textContent = "-";
-    $("tableTemp").textContent = $("density").textContent = $("factor").textContent = "-";
+    $("tableTemp").textContent = "-";
+    $("density").textContent = "-";
+    $("factor").textContent = "-";
   }
 
-  const clearVolume = () => ["actualUllage","baseUllage","difference","baseVolume","litrePerCm","volumeCorrection","oilVolume","massBeforeFactor","vmt"].forEach(id => { const el = $(id); if (el) el.textContent = "-"; });
+  const clearVolume = () => {
+    [
+      "actualUllage",
+      "baseUllage",
+      "difference",
+      "baseVolume",
+      "litrePerCm",
+      "volumeCorrection",
+      "oilVolume",
+      "massBeforeFactor",
+      "vmt"
+    ].forEach(id => {
+      const el = $(id);
+      if (el) el.textContent = "-";
+    });
+  };
+
+  // VALIDASI ULLAGE & CALIBRATION
   if (!Number.isFinite(u) || u <= 0 || !rows.length) {
     clearVolume();
     currentCalculation = null;
+    resetTankMonitor();
     return null;
   }
 
   const x = findVolume(u);
+
   if (!x) {
     clearVolume();
     currentCalculation = null;
+    resetTankMonitor();
     return null;
   }
 
   // ULLAGE: semakin besar ullage, semakin sedikit volume oil.
-  // Volume oil = volume dasar - (selisih ullage × L/cm).
+  // findVolume() sudah mengambil volume berdasarkan tabel kalibrasi.
   const baseUllage = x.base.ullage;
   const difference = u - baseUllage;
   const litrePerCm = x.diff;
   const volumeCorrection = Math.abs(difference) * litrePerCm;
   const oilVolume = x.volume;
 
-  [["actualUllage", fmt(u, 1)], ["baseUllage", fmt(baseUllage, 1)], ["difference", fmt(difference, 1)], ["baseVolume", fmt(x.base.volume)], ["litrePerCm", fmt(litrePerCm)], ["volumeCorrection", fmt(volumeCorrection)], ["oilVolume", fmt(oilVolume)]].forEach(([id, value]) => { const el = $(id); if (el) el.textContent = value; });
+  [
+    ["actualUllage", fmt(u, 1)],
+    ["baseUllage", fmt(baseUllage, 1)],
+    ["difference", fmt(difference, 1)],
+    ["baseVolume", fmt(x.base.volume)],
+    ["litrePerCm", fmt(litrePerCm)],
+    ["volumeCorrection", fmt(volumeCorrection)],
+    ["oilVolume", fmt(oilVolume)]
+  ].forEach(([id, value]) => {
+    const el = $(id);
+    if (el) el.textContent = value;
+  });
 
-  let mass = NaN, vmt = NaN;
+  // MASS & VMT
+  let mass = NaN;
+  let vmt = NaN;
+
   if (densityData && Number.isFinite(densityData.density)) {
     mass = oilVolume * densityData.density / 1000;
-    if ($("massBeforeFactor")) $("massBeforeFactor").textContent = fmt(mass);
+
+    if ($("massBeforeFactor")) {
+      $("massBeforeFactor").textContent = fmt(mass);
+    }
+
     if (Number.isFinite(densityData.factor)) {
       vmt = mass * densityData.factor;
       if ($("vmt")) $("vmt").textContent = fmt(vmt);
@@ -449,6 +497,8 @@ function calculate() {
     massBeforeFactor: Number.isFinite(mass) ? mass : null,
     vmt: Number.isFinite(vmt) ? vmt : null
   };
+
+  updateTankMonitor();
   return currentCalculation;
 }
 
@@ -459,7 +509,22 @@ function historyInputSignature(calc, dateStr) {
 let lastSavedSignature = null;
 
 async function saveCurrentHistory() {
-  const calc = calculate();
+  const input = readInputs();
+  const calc = currentCalculation;
+
+  const calculationMatchesInput =
+    calc &&
+    calc.tank === activeTank &&
+    calc.ullage === input.ullage &&
+    calc.t1 === input.t1 &&
+    calc.t2 === input.t2 &&
+    calc.t3 === input.t3;
+
+  if (!calculationMatchesInput) {
+    alert("Klik tombol Hitung terlebih dahulu sebelum menyimpan ke history.");
+    return;
+  }
+
   if (!calc || !Number.isFinite(calc.ullage) || calc.ullage <= 0) {
     alert("Lengkapi Dipp/Ullage dan data sounding terlebih dahulu.");
     return;
@@ -591,10 +656,9 @@ function exportCalibrationExcel() {
 }
 
 ["ullage","t1","t2","t3"].forEach(id => {
-  $(id).addEventListener("input",()=>{
+  $(id).addEventListener("input", () => {
     saveActiveTankState();
-    calculate();
-    // Input hanya menghitung hasil. History TIDAK disimpan otomatis.
+    // Tidak menghitung otomatis. Hasil hanya muncul setelah tombol Hitung ditekan.
   });
 });
 
@@ -615,3 +679,48 @@ setHistoryModeLabel();
 renderHistory();
 loadExcel(1);
 loadDensity();
+
+function updateTankMonitor() {
+  const monitorUllage = document.getElementById("monitorUllage");
+  const monitorTemp = document.getElementById("monitorTemp");
+  const monitorDensity = document.getElementById("monitorDensity");
+  const monitorMass = document.getElementById("monitorMass");
+  const monitorVolume = document.getElementById("monitorVolume");
+
+  if (!monitorUllage) return;
+
+  monitorUllage.textContent =
+    document.getElementById("actualUllage")?.textContent || "-";
+
+  monitorTemp.textContent =
+    document.getElementById("avgTemp")?.textContent || "-";
+
+  monitorDensity.textContent =
+    document.getElementById("density")?.textContent || "-";
+
+  monitorMass.textContent =
+    document.getElementById("vmt")?.textContent || "-";
+
+  monitorVolume.textContent =
+    document.getElementById("oilVolume")?.textContent || "-";
+
+  document.getElementById("tankMonitor")?.classList.remove("is-empty");
+}
+
+function resetTankMonitor() {
+  [
+    "monitorUllage",
+    "monitorTemp",
+    "monitorDensity",
+    "monitorMass",
+    "monitorVolume"
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = "-";
+  });
+
+  document.getElementById("tankMonitor")?.classList.add("is-empty");
+}
+
+// Pastikan monitor selalu kosong saat aplikasi pertama kali dibuka.
+resetTankMonitor();
