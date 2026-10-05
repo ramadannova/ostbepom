@@ -39,3 +39,50 @@ button,input{font:inherit}
 .bottom-history .history-table-wrap{margin:0 10px 10px;max-height:420px;}
 .vmt-card span{font-size:14px;color:#16664f;font-weight:700;}
 @media(max-width:650px){.bottom-history .history-toolbar{margin:8px;}.date-control{width:100%;}.date-control input{flex:1;}.bottom-history .history-table-wrap{margin:0 6px 7px;}}
+/* =========================================
+   TANK MONITOR - HASIL PERHITUNGAN
+========================================= */
+
+.tank-monitor {
+  background: linear-gradient(135deg, #f7fbf9, #eaf5f0);
+  border: 1px solid #cfe5dc;
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 14px;
+  box-shadow: 0 3px 10px rgba(0, 80, 50, 0.06);
+}
+
+/* Setiap baris monitor */
+.monitor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 34px;
+  border-bottom: 1px solid rgba(20, 100, 70, 0.08);
+}
+
+/* Hilangkan garis pada baris terakhir */
+.monitor-row:last-child {
+  border-bottom: none;
+}
+
+/* Nama parameter */
+.monitor-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #36564b;
+}
+
+/* Nilai hasil */
+.monitor-row strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #123f32;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Saat belum dihitung */
+.tank-monitor.is-empty .monitor-row strong {
+  color: #9aa9a3;
+}
