@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Berau Palm Oil Mill - Oil Sounding Tank</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="hero-header">
+    <div class="hero-title">Berau Palm Oil Mill</div>
+    <div class="hero-subtitle">Oil Sounding Tank Monitoring &amp; Calculation</div>
+  </header>
+
+  <main class="page-wrap">
+    <div class="tank-tabs" id="tankTabs"></div>
+
+    <section id="tankView" class="main-card">
+      <div class="tank-heading">
+        <div>
+          <div class="tank-heading-title" id="tankTitle">ST 1 - Oil Sounding Tank 1</div>
+          <div class="tank-heading-subtitle">Calculate the oil volume and other parameters based on the sounding data</div>
+        </div>
+      </div>
+
+      <div class="top-grid">
+        <section class="input-card">
+          <h2 class="section-title"><span class="title-icon">⌁</span>Input Data Sounding</h2>
+          <div class="input-row">
+            <label for="ullage"><span class="row-icon">▥</span> Ullage / Dipp (cm)</label>
+            <div class="input-unit"><input id="ullage" type="number" step="0.1" value="0"><span>cm</span></div>
+          </div>
+          <div class="input-row">
+            <label for="t1"><span class="row-icon">♨</span> Temperature 1 (°C)</label>
+            <div class="input-unit"><input id="t1" type="number" step="0.1" value="0"><span>°C</span></div>
+          </div>
+          <div class="input-row">
+            <label for="t2"><span class="row-icon">♨</span> Temperature 2 (°C)</label>
+            <div class="input-unit"><input id="t2" type="number" step="0.1" value="0"><span>°C</span></div>
+          </div>
+          <div class="input-row">
+            <label for="t3"><span class="row-icon">♨</span> Temperature 3 (°C)</label>
+            <div class="input-unit"><input id="t3" type="number" step="0.1" value="0"><span>°C</span></div>
+          </div>
+
+          <div class="quick-results">
+            <div><span>♨</span><small>Rata-rata Temperatur</small><strong><span id="avgTemp">-</span> °C</strong></div>
+            <div><span>▦</span><small>Temperatur Tabel</small><strong><span id="tableTemp">-</span> °C</strong></div>
+            <div><span>♜</span><small>Density</small><strong id="density">-</strong></div>
+          </div>
+          <button id="calculateBtn" class="calculate-btn"><span>▦</span> Hitung <b>›</b></button>
+        </section>
+
+        <section class="visual-card">
+          <div class="tank-visual-wrap">
+            <img src="tank.png" alt="Oil Sounding Tank" class="tank-visual">
+          </div>
+          <div class="info-box">
+            <div class="info-icon">i</div>
+            <div>
+              <strong>Informasi</strong>
+              <p>Masukkan data sounding dan temperatur untuk mendapatkan hasil perhitungan volume, densitas, dan parameter lainnya.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="results-section">
+        <div class="green-section-title"><span>◆</span> Hasil Perhitungan</div>
+        <div class="result-grid">
+          <div class="result-item"><span class="result-icon">▥</span><div><small>Ullage (cm)</small><strong id="actualUllage">-</strong></div><em>cm</em></div>
+          <div class="result-item"><span class="result-icon">⚖</span><div><small>Selisih</small><strong id="difference">-</strong></div><em>cm</em></div>
+          <div class="result-item"><span class="result-icon">◯</span><div><small>Volume Oil (L)</small><strong id="oilVolume">-</strong></div><em>L</em></div>
+          <div class="result-item"><span class="result-icon">▤</span><div><small>Volume per cm</small><strong id="litrePerCm">-</strong></div><em>L/cm</em></div>
+          <div class="result-item"><span class="result-icon">▦</span><div><small>Volume × Density</small><strong id="massBeforeFactor">-</strong></div><em>MT</em></div>
+          <div class="result-item"><span class="result-icon">◇</span><div><small>Koreksi volume</small><strong id="volumeCorrection">-</strong></div><em>L</em></div>
+        </div>
+        <div class="vmt-card">
+          <div><small>VMT / Isi Tank</small><strong id="vmt">-</strong> <span>MT</span></div>
+          <div class="factor-display"><b>Correction Factor:</b> <span id="factor">-</span></div>
+        </div>
+        <div class="history-save-area">
+          <button id="saveHistoryBtn" class="save-history-btn">💾 Simpan Kalkulasi ke History</button>
+          <span id="saveHistoryStatus" class="save-history-status"></span>
+        </div>
+      </section>
+
+      <section class="calibration-section">
+        <div class="calibration-title"><span>▣</span> Data dari Excel - Kalibrasi Ullage</div>
+        <div class="calibration-toolbar">
+          <p class="status" id="excelStatus">Membaca data/ST 1.xlsx...</p>
+        </div>
+        <div class="table-scroll calibration-scroll">
+          <table><thead><tr><th>Ullage (cm)</th><th>Volume (L)</th><th>L/cm</th></tr></thead><tbody id="calibrationBody"></tbody></table>
+        </div>
+      </section>
+
+      <section class="density-section">
+        <div class="calibration-title"><span>▦</span> Tabel Density &amp; Correction Factor vs Temperature</div>
+        <p class="status" id="densityStatus">Membaca data/density.xlsx...</p>
+        <div class="table-scroll density-scroll">
+          <table><thead><tr><th>Temperature (°C)</th><th>Density</th><th>Correction Factor</th></tr></thead><tbody id="densityBody"></tbody></table>
+        </div>
+      </section>
+
+      <!-- HISTORY DITARUH PALING BAWAH -->
+      <section class="bottom-history">
+        <div class="history-section-title"><span>◷</span> History Sounding</div>
+        <div id="historyMode" class="history-mode"></div>
+        <div class="history-toolbar">
+          <div class="date-control"><label for="historyDate">Tanggal:</label><input id="historyDate" type="date"></div>
+          <div class="history-actions">
+            <button id="showAllHistoryBtn" class="secondary-btn">📅 Semua Tanggal</button>
+            <button id="exportHistoryBtn" class="secondary-btn">📥 Export CSV</button>
+            <button id="clearHistoryBtn" class="danger-btn">🗑️ Hapus Semua</button>
+          </div>
+        </div>
+        <div id="historySummary" class="history-summary"></div>
+        <div id="historyEmpty" class="history-empty hidden">Belum ada data history.</div>
+        <div class="history-table-wrap">
+          <table class="history-table">
+            <thead><tr><th>Tanggal</th><th>Jam</th><th>Tank</th><th>Dipp / Ullage<br>(cm)</th><th>Avg Temp<br>(°C)</th><th>Temp Tabel<br>(°C)</th><th>Density</th><th>Volume Oil<br>(L)</th><th>VMT<br>(MT)</th><th>Aksi</th></tr></thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="supabase-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
