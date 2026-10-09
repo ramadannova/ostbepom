@@ -96,7 +96,13 @@
 
   <!-- GAMBAR TANGKI -->
   <div class="tank-visual-wrap">
-    <img src="tank.png" alt="Oil Sounding Tank" class="tank-visual">
+    <div class="tank-composite" id="tankComposite" role="img" aria-label="Oil Sounding Tank dengan level minyak dinamis">
+      <img src="tank-back.png" alt="" class="tank-layer tank-layer-back" draggable="false">
+      <div class="oil-level-clip" id="oilLevelClip" aria-hidden="true">
+        <img src="tank-oil.png" alt="" class="tank-layer tank-layer-oil" draggable="false">
+      </div>
+      <img src="tank-front.png" alt="" class="tank-layer tank-layer-front" draggable="false">
+    </div>
   </div>
 
   <div class="info-box">
