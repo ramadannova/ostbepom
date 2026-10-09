@@ -13,15 +13,15 @@ const tankState = {
   3: { ullage: 0, t1: 0, t2: 0, t3: 0 },
   4: { ullage: 0, t1: 0, t2: 0, t3: 0 }
 };
-
+ 
 const $ = id => document.getElementById(id);
-
+ 
 function fmt(n, d = 3) {
   return Number.isFinite(n)
     ? n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d })
     : "-";
 }
-
+ 
 function numeric(v) {
   if (typeof v === "number") return Number.isFinite(v) ? v : NaN;
   if (v == null || v === "") return NaN;
@@ -30,24 +30,24 @@ function numeric(v) {
   if (/^-?\d+(\.\d+)?$/.test(s)) return Number(s);
   return Number(s.replace(/\./g, "").replace(",", "."));
 }
-
+ 
 function localDateString(date = new Date()) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
-
+ 
 function localTimeString(date = new Date()) {
   return date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 }
-
+ 
 function formatDateDisplay(dateStr) {
   if (!dateStr) return "-";
   const [y, m, d] = dateStr.split("-");
   return `${d}-${m}-${y}`;
 }
-
+ 
 function getLocalHistory() {
   try {
     const data = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
@@ -60,11 +60,11 @@ function getLocalHistory() {
     return [];
   }
 }
-
+ 
 function setLocalHistory(data) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(data));
 }
-
+ 
 async function cloudRequest(path, options = {}) {
   const headers = {
     apikey: SUPABASE_CONFIG.anonKey,
@@ -81,7 +81,7 @@ async function cloudRequest(path, options = {}) {
   if (res.status === 204) return null;
   return res.json();
 }
-
+ 
 async function getHistory() {
   if (!CLOUD_HISTORY_ENABLED) return getLocalHistory();
   try {
@@ -92,7 +92,7 @@ async function getHistory() {
     return getLocalHistory();
   }
 }
-
+ 
 async function saveHistoryRecord(record) {
   if (!CLOUD_HISTORY_ENABLED) {
     const history = getLocalHistory();
@@ -110,7 +110,7 @@ async function saveHistoryRecord(record) {
   });
   return { existing: false, record: inserted[0] };
 }
-
+ 
 async function deleteHistoryRecord(id) {
   if (!CLOUD_HISTORY_ENABLED) {
     setLocalHistory(getLocalHistory().filter(r => r.id !== id));
@@ -118,7 +118,7 @@ async function deleteHistoryRecord(id) {
   }
   await cloudRequest(`sounding_history?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
 }
-
+ 
 async function clearHistoryRecords() {
   if (!CLOUD_HISTORY_ENABLED) {
     localStorage.removeItem(HISTORY_KEY);
@@ -126,21 +126,21 @@ async function clearHistoryRecords() {
   }
   await cloudRequest("sounding_history?id=not.is.null", { method: "DELETE" });
 }
-
+ 
 function showCloudStatus(message, ok = true) {
   const el = $("cloudStatus");
   if (!el) return;
   el.textContent = message;
   el.classList.toggle("success", ok);
 }
-
+ 
 function setHistoryModeLabel() {
   const el = $("historyMode");
   if (!el) return;
   el.textContent = CLOUD_HISTORY_ENABLED ? "☁ History tersimpan online & dapat dilihat semua pengguna" : "💻 Mode lokal — isi supabase-config.js untuk history bersama";
   el.classList.toggle("cloud", CLOUD_HISTORY_ENABLED);
 }
-
+ 
 function buildTankTabs() {
   const el = $("tankTabs");
   el.innerHTML = tanks.map(n =>
@@ -150,7 +150,7 @@ function buildTankTabs() {
     btn.addEventListener("click", () => switchTank(Number(btn.dataset.tank)));
   });
 }
-
+ 
 function readInputs() {
   return {
     ullage: Number($("ullage").value) || 0,
@@ -159,18 +159,18 @@ function readInputs() {
     t3: Number($("t3").value) || 0
   };
 }
-
+ 
 function writeInputs(state) {
   $("ullage").value = state.ullage;
   $("t1").value = state.t1;
   $("t2").value = state.t2;
   $("t3").value = state.t3;
 }
-
+ 
 function saveActiveTankState() {
   tankState[activeTank] = readInputs();
 }
-
+ 
 async function switchTank(n) {
   saveActiveTankState();
   activeTank = n;
@@ -183,7 +183,7 @@ async function switchTank(n) {
   $("excelStatus").textContent = `Membaca data/ST ${n}.xlsx...`;
   await loadExcel(n);
 }
-
+ 
 async function loadExcel(tankNo) {
   try {
     const res = await fetch(`data/ST ${tankNo}.xlsx`, { cache: "no-store" });
@@ -204,7 +204,7 @@ async function loadExcel(tankNo) {
     resetTankMonitor();
   }
 }
-
+ 
 const DEFAULT_DENSITY_ROWS = [
   [25,0.9052,0.9997564],[26,0.9046,0.9997912],[27,0.9040,0.9998260],[28,0.9033,0.9998608],[29,0.9027,0.9998956],[30,0.9021,0.9999304],
   [31,0.9014,0.9999652],[32,0.9008,1.0000000],[33,0.9001,1.0000348],[34,0.8995,1.0000696],[35,0.8989,1.0001044],[36,0.8982,1.0001392],
@@ -216,7 +216,7 @@ const DEFAULT_DENSITY_ROWS = [
   [67,0.8784,1.0012180],[68,0.8878,1.0012528],[69,0.8872,1.0012876],[70,0.8766,1.0013224],[71,0.8760,1.0013572],[72,0.8754,1.0013920],
   [73,0.8748,1.0014268],[74,0.8742,1.0014616],[75,0.8736,1.0014964],[76,0.8730,1.0015312]
 ].map(([temperature,density,factor])=>({temperature,density,factor}));
-
+ 
 async function loadDensity() {
   try {
     const candidates = [
@@ -232,7 +232,7 @@ async function loadDensity() {
       } catch (_) {}
     }
     if (!res) throw new Error("File density.xlsx tidak ditemukan");
-
+ 
     const buf = await res.arrayBuffer();
     const wb = XLSX.read(buf, { type: "array", cellDates: false });
     const allRows = [];
@@ -240,10 +240,10 @@ async function loadDensity() {
       const raw = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: null, raw: true });
       allRows.push(...raw);
     }
-
+ 
     densityRows = parseDensitySheet(allRows);
     if (!densityRows.length) throw new Error("Data density di Excel tidak terbaca");
-
+ 
     renderDensityTable();
     $("densityStatus").textContent = `✓ density.xlsx terbaca (${densityRows.length} data)`;
     resetTankMonitor();
@@ -257,7 +257,7 @@ async function loadDensity() {
     resetTankMonitor();
   }
 }
-
+ 
 function parseDensitySheet(raw) {
   const found = [];
   for (let r = 0; r < raw.length; r++) {
@@ -268,7 +268,7 @@ function parseDensitySheet(raw) {
       const h2 = String(row[c + 1] ?? "").trim().toLowerCase();
       const h3 = String(row[c + 2] ?? "").trim().toLowerCase();
       if (!(h2.includes("density") || h2.includes("densitas"))) continue;
-
+ 
       for (let rr = r + 1; rr < raw.length; rr++) {
         const a = raw[rr]?.[c];
         const b = raw[rr]?.[c + 1];
@@ -291,7 +291,7 @@ function parseDensitySheet(raw) {
   for (const item of found) unique.set(item.temperature, item);
   return [...unique.values()].sort((a,b)=>a.temperature-b.temperature);
 }
-
+ 
 function renderDensityTable() {
   const body = $("densityBody");
   if (!body) return;
@@ -303,7 +303,7 @@ function renderDensityTable() {
     </tr>
   `).join("");
 }
-
+ 
 function findDensity(temp) {
   if (!densityRows.length || !Number.isFinite(temp)) return null;
   let nearest = densityRows[0];
@@ -314,7 +314,7 @@ function findDensity(temp) {
   }
   return nearest;
 }
-
+ 
 function parseCalibrationSheet(raw) {
   const parsed = [];
   const headerRowsToCheck = Math.min(raw.length, 5);
@@ -338,7 +338,7 @@ function parseCalibrationSheet(raw) {
   for (const item of parsed) unique.set(item.ullage, item.volume);
   return [...unique.entries()].map(([ullage, volume]) => ({ ullage: Number(ullage), volume: Number(volume) })).sort((a,b)=>a.ullage-b.ullage);
 }
-
+ 
 function findVolume(u) {
   if (!rows.length || u < rows[0].ullage || u > rows[rows.length - 1].ullage) return null;
   for (let i = 0; i < rows.length; i++) {
@@ -355,34 +355,35 @@ function findVolume(u) {
   }
   return null;
 }
-
+ 
 function renderTable() {
   $("calibrationBody").innerHTML = rows.map((r, i) => {
     const lcm = i < rows.length - 1 ? Math.abs((rows[i+1].volume-r.volume)/(rows[i+1].ullage-r.ullage)) : 0;
     return `<tr><td>${r.ullage}</td><td>${fmt(r.volume)}</td><td>${fmt(lcm)}</td></tr>`;
   }).join("");
 }
-
+ 
 function clearCalculated() {
-  ["avgTemp","tableTemp","density","actualUllage","difference","litrePerCm","volumeCorrection","oilVolume","massBeforeFactor","vmt","factor"].forEach(id => { const el = $(id); if (el) el.textContent = "-"; });
+  ["avgTemp","tableTemp","density","actualUllage","baseUllage","difference","baseVolume","litrePerCm","volumeCorrection","oilVolume","massBeforeFactor","vmt","factor"].forEach(id => { const el = $(id); if (el) el.textContent = "-"; });
   currentCalculation = null;
+  resetTankMonitor();
 }
-
+ 
 function calculate() {
   const u = Number($("ullage").value);
   const temps = [$("t1").value, $("t2").value, $("t3").value].map(Number);
   const validTemps = temps.filter(t => Number.isFinite(t) && t > 0);
-
+ 
   let avg = NaN;
   let densityData = null;
-
+ 
   // TEMPERATURE & DENSITY
   if (validTemps.length) {
     avg = validTemps.reduce((a, b) => a + b, 0) / validTemps.length;
     $("avgTemp").textContent = fmt(avg, 2);
-
+ 
     densityData = findDensity(avg);
-
+ 
     if (densityData) {
       $("tableTemp").textContent = fmt(densityData.temperature, 1);
       $("density").textContent = fmt(densityData.density, 4);
@@ -400,7 +401,7 @@ function calculate() {
     $("density").textContent = "-";
     $("factor").textContent = "-";
   }
-
+ 
   const clearVolume = () => {
     [
       "actualUllage",
@@ -417,7 +418,7 @@ function calculate() {
       if (el) el.textContent = "-";
     });
   };
-
+ 
   // VALIDASI ULLAGE & CALIBRATION
   if (!Number.isFinite(u) || u <= 0 || !rows.length) {
     clearVolume();
@@ -425,16 +426,16 @@ function calculate() {
     resetTankMonitor();
     return null;
   }
-
+ 
   const x = findVolume(u);
-
+ 
   if (!x) {
     clearVolume();
     currentCalculation = null;
     resetTankMonitor();
     return null;
   }
-
+ 
   // ULLAGE: semakin besar ullage, semakin sedikit volume oil.
   // findVolume() sudah mengambil volume berdasarkan tabel kalibrasi.
   const baseUllage = x.base.ullage;
@@ -442,7 +443,10 @@ function calculate() {
   const litrePerCm = x.diff;
   const volumeCorrection = Math.abs(difference) * litrePerCm;
   const oilVolume = x.volume;
-
+ 
+  // Update the orange layer: bigger ullage means a lower oil level.
+  updateTankOilLevel(u);
+ 
   [
     ["actualUllage", fmt(u, 1)],
     ["baseUllage", fmt(baseUllage, 1)],
@@ -455,18 +459,18 @@ function calculate() {
     const el = $(id);
     if (el) el.textContent = value;
   });
-
+ 
   // MASS & VMT
   let mass = NaN;
   let vmt = NaN;
-
+ 
   if (densityData && Number.isFinite(densityData.density)) {
     mass = oilVolume * densityData.density / 1000;
-
+ 
     if ($("massBeforeFactor")) {
       $("massBeforeFactor").textContent = fmt(mass);
     }
-
+ 
     if (Number.isFinite(densityData.factor)) {
       vmt = mass * densityData.factor;
       if ($("vmt")) $("vmt").textContent = fmt(vmt);
@@ -477,7 +481,7 @@ function calculate() {
     if ($("massBeforeFactor")) $("massBeforeFactor").textContent = "-";
     if ($("vmt")) $("vmt").textContent = "-";
   }
-
+ 
   currentCalculation = {
     tank: activeTank,
     ullage: u,
@@ -497,21 +501,21 @@ function calculate() {
     massBeforeFactor: Number.isFinite(mass) ? mass : null,
     vmt: Number.isFinite(vmt) ? vmt : null
   };
-
+ 
   updateTankMonitor();
   return currentCalculation;
 }
-
+ 
 function historyInputSignature(calc, dateStr) {
   return [dateStr, calc.tank, calc.ullage, calc.t1, calc.t2, calc.t3].join("|");
 }
-
+ 
 let lastSavedSignature = null;
-
+ 
 async function saveCurrentHistory() {
   const input = readInputs();
   const calc = currentCalculation;
-
+ 
   const calculationMatchesInput =
     calc &&
     calc.tank === activeTank &&
@@ -519,12 +523,12 @@ async function saveCurrentHistory() {
     calc.t1 === input.t1 &&
     calc.t2 === input.t2 &&
     calc.t3 === input.t3;
-
+ 
   if (!calculationMatchesInput) {
     alert("Klik tombol Hitung terlebih dahulu sebelum menyimpan ke history.");
     return;
   }
-
+ 
   if (!calc || !Number.isFinite(calc.ullage) || calc.ullage <= 0) {
     alert("Lengkapi Dipp/Ullage dan data sounding terlebih dahulu.");
     return;
@@ -533,7 +537,7 @@ async function saveCurrentHistory() {
     alert("Perhitungan belum lengkap. Pastikan data temperature, density, dan calibration Excel sudah terbaca.");
     return;
   }
-
+ 
   const now = new Date();
   const dateStr = localDateString(now);
   const signature = historyInputSignature(calc, dateStr);
@@ -544,7 +548,7 @@ async function saveCurrentHistory() {
     signature,
     ...calc
   };
-
+ 
   try {
     const result = await saveHistoryRecord(record);
     renderHistory();
@@ -556,7 +560,7 @@ async function saveCurrentHistory() {
     alert(`Gagal menyimpan history ke database.\n\n${e.message}`);
   }
 }
-
+ 
 function showSaveStatus(message, ok = false) {
   const el = $("saveHistoryStatus");
   if (!el) return;
@@ -565,13 +569,13 @@ function showSaveStatus(message, ok = false) {
   clearTimeout(showSaveStatus.timer);
   showSaveStatus.timer = setTimeout(() => { el.textContent = ""; el.classList.remove("success"); }, 3500);
 }
-
+ 
 async function renderHistory() {
   const all = await getHistory();
   const filtered = historyDateFilter ? all.filter(r => r.date === historyDateFilter) : all;
   const body = $("historyBody");
   const empty = $("historyEmpty");
-
+ 
   if (!filtered.length) {
     body.innerHTML = "";
     empty.classList.remove("hidden");
@@ -579,10 +583,10 @@ async function renderHistory() {
     return;
   }
   empty.classList.add("hidden");
-
+ 
   const dates = [...new Set(filtered.map(r=>r.date))];
   $("historySummary").textContent = `${filtered.length} record${filtered.length > 1 ? "s" : ""} • ${historyDateFilter ? formatDateDisplay(historyDateFilter) : `${dates.length} hari`}`;
-
+ 
   body.innerHTML = filtered.map(r => `
     <tr>
       <td>${formatDateDisplay(r.date)}</td>
@@ -597,10 +601,10 @@ async function renderHistory() {
       <td><button class="history-delete" data-id="${r.id}">Hapus</button></td>
     </tr>
   `).join("");
-
+ 
   body.querySelectorAll(".history-delete").forEach(btn => btn.addEventListener("click", async () => await deleteHistory(btn.dataset.id)));
 }
-
+ 
 async function deleteHistory(id) {
   if (!confirm("Hapus record history ini?")) return;
   try {
@@ -610,7 +614,7 @@ async function deleteHistory(id) {
     alert(`Gagal menghapus history.\n\n${e.message}`);
   }
 }
-
+ 
 async function clearAllHistory() {
   const all = await getHistory();
   const count = all.length;
@@ -624,7 +628,7 @@ async function clearAllHistory() {
     }
   }
 }
-
+ 
 async function exportHistoryCSV() {
   const all = await getHistory();
   const data = historyDateFilter ? all.filter(r=>r.date===historyDateFilter) : all;
@@ -640,8 +644,8 @@ async function exportHistoryCSV() {
   a.click();
   URL.revokeObjectURL(url);
 }
-
-
+ 
+ 
 function exportCalibrationExcel() {
   if (!rows.length) { alert("Data kalibrasi belum tersedia."); return; }
   const data = rows.map((r, i) => ({
@@ -654,59 +658,59 @@ function exportCalibrationExcel() {
   XLSX.utils.book_append_sheet(wb, ws, `ST ${activeTank}`);
   XLSX.writeFile(wb, `Kalibrasi_Ullage_ST_${activeTank}.xlsx`);
 }
-
+ 
 ["ullage","t1","t2","t3"].forEach(id => {
   $(id).addEventListener("input", () => {
     saveActiveTankState();
     // Tidak menghitung otomatis. Hasil hanya muncul setelah tombol Hitung ditekan.
   });
 });
-
+ 
 $("saveHistoryBtn").addEventListener("click", saveCurrentHistory);
 $("calculateBtn")?.addEventListener("click", calculate);
 $("exportCalibrationBtn")?.addEventListener("click", exportCalibrationExcel);
-
+ 
 $("historyDate").value = localDateString();
 $("historyDate").addEventListener("change", e => { historyDateFilter = e.target.value || null; renderHistory(); });
 $("showAllHistoryBtn").addEventListener("click", () => { historyDateFilter = null; $("historyDate").value = ""; renderHistory(); });
 $("exportHistoryBtn").addEventListener("click", exportHistoryCSV);
 $("clearHistoryBtn").addEventListener("click", clearAllHistory);
-
-
+ 
+ 
 buildTankTabs();
 writeInputs(tankState[1]);
 setHistoryModeLabel();
 renderHistory();
 loadExcel(1);
 loadDensity();
-
+ 
 function updateTankMonitor() {
   const monitorUllage = document.getElementById("monitorUllage");
   const monitorTemp = document.getElementById("monitorTemp");
   const monitorDensity = document.getElementById("monitorDensity");
   const monitorMass = document.getElementById("monitorMass");
   const monitorVolume = document.getElementById("monitorVolume");
-
+ 
   if (!monitorUllage) return;
-
+ 
   monitorUllage.textContent =
     document.getElementById("actualUllage")?.textContent || "-";
-
+ 
   monitorTemp.textContent =
     document.getElementById("avgTemp")?.textContent || "-";
-
+ 
   monitorDensity.textContent =
     document.getElementById("density")?.textContent || "-";
-
+ 
   monitorMass.textContent =
     document.getElementById("vmt")?.textContent || "-";
-
+ 
   monitorVolume.textContent =
     document.getElementById("oilVolume")?.textContent || "-";
-
+ 
   document.getElementById("tankMonitor")?.classList.remove("is-empty");
 }
-
+ 
 function resetTankMonitor() {
   [
     "monitorUllage",
@@ -718,9 +722,61 @@ function resetTankMonitor() {
     const el = document.getElementById(id);
     if (el) el.textContent = "-";
   });
-
+ 
   document.getElementById("tankMonitor")?.classList.add("is-empty");
+  resetTankOilLevel();
 }
-
+ 
 // Pastikan monitor selalu kosong saat aplikasi pertama kali dibuka.
 resetTankMonitor();
+ 
+ 
+// Oil level is a visual approximation based on the active tank's Ullage range.
+// Ullage kecil = minyak tinggi. Ullage besar = minyak rendah.
+function updateTankOilLevel(ullage) {
+  const clip = $("oilLevelClip");
+  if (!clip) return;
+ 
+  if (!rows.length || rows.length < 2 || !Number.isFinite(ullage)) {
+    resetTankOilLevel();
+    return;
+  }
+ 
+  const minUllage = Number(rows[0].ullage);
+  const maxUllage = Number(rows[rows.length - 1].ullage);
+  const range = maxUllage - minUllage;
+ 
+  if (
+    !Number.isFinite(minUllage) ||
+    !Number.isFinite(maxUllage) ||
+    !Number.isFinite(range) ||
+    range <= 0
+  ) {
+    resetTankOilLevel();
+    return;
+  }
+ 
+  // Gunakan rentang Ullage tabel untuk gerakan naik-turun visual.
+  // Sengaja batasi tinggi maksimum minyak agar selalu tampak ada ruang kosong
+  // di bagian atas tank; ini hanya pengaturan visual, bukan koreksi volume.
+  const normalizedLevel = Math.max(
+    0,
+    Math.min(1, (maxUllage - ullage) / range)
+  );
+ 
+  // 88% berarti clip dari atas 12% saat level visual maksimum.
+  // PNG minyak mulai sekitar 12% dari atas, jadi ruang kosong tetap terlihat.
+  const MAX_VISUAL_FILL_PERCENT = 88;
+  const levelPercent = normalizedLevel * MAX_VISUAL_FILL_PERCENT;
+  const cutoffPercent = 100 - levelPercent;
+ 
+  clip.style.setProperty("--oil-cutoff", `${cutoffPercent.toFixed(2)}%`);
+  clip.dataset.level = levelPercent.toFixed(1);
+}
+ 
+function resetTankOilLevel() {
+  const clip = $("oilLevelClip");
+  if (!clip) return;
+  clip.style.setProperty("--oil-cutoff", "100%");
+  delete clip.dataset.level;
+}
